@@ -22,3 +22,4 @@ celerybeat*
 
 /venv/
 app_log.log
+.env
