@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import Mock, patch
 
 from app import get_client_ip
-from schemas import GetIpInfoResponseBody, GetWeather, GetWeatherResponseBody
+from schemas import GetIpInfoResponseBody, GetWeather, GetWeatherResponseBody, Temperature
 
 
 class MockRequest:
@@ -28,7 +28,10 @@ def test_get_client_ip(mock_requests, result):
 def test_get_weather(client):
     get_ip_info_response = GetIpInfoResponseBody(loc='43.6481, 51.1722', lat=43.6481, lon=51.1722)
     get_weather_info_response = GetWeatherResponseBody(
-        weather=[GetWeather(id=801, main='Clouds', description='few clouds', icon='02d')])
+        weather=[GetWeather(description='few clouds')],
+        name='Moscow',
+        main=Temperature(temp=11.00)
+    )
     with patch(
             "utils.ipinfo.GetIpInfo.__call__",
             new_callable=lambda *args: Mock(return_value=get_ip_info_response)
@@ -38,4 +41,4 @@ def test_get_weather(client):
                 new_callable=lambda *args: Mock(return_value=get_weather_info_response)
         ):
             test_result = client.get('/')
-            assert test_result.json == get_weather_info_response.dict()
+            assert test_result.json == {'city': 'Moscow', 'conditions': 'few clouds', 'temp': 11.0}

@@ -37,8 +37,13 @@ def get_client_ip(request):
 def get_weather():
     ip = get_client_ip(flask_request)
     coordinates = GetIpInfo(ip)()
-    result = GetWeatherInfo(coordinates)()
-    return jsonify(result.dict())
+    weather_data = GetWeatherInfo(coordinates)()
+    result = {
+        'city': weather_data.name,
+        'temp': weather_data.main.temp,
+        'conditions': weather_data.weather[0].description,
+    }
+    return jsonify(result)
 
 
 if __name__ == '__main__':

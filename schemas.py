@@ -36,17 +36,21 @@ class IpInfoToken(BaseModel):
 
 
 class GetWeather(BaseModel):
-    id: int
-    main: str
     description: str
-    icon: str
+
+
+class Temperature(BaseModel):
+    temp: float
 
 
 class GetWeatherResponseBody(BaseModel):
+    name: str
     weather: list[GetWeather]
+    main: Temperature
 
 
 class GetWeatherQueryParams(BaseModel):
     lat: float
     lon: float
     appid: str
+    units: str = 'metric'
