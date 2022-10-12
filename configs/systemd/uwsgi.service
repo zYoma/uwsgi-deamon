@@ -1,0 +1,11 @@
+[Unit]
+Description=uWSGI daemon
+
+[Service]
+ExecStartPre=-/usr/bin/bash -c 'mkdir -p /run/uwsgi; chown user:nginx /run/uwsgi'
+ExecStart=/usr/bin/bash -c 'cd /app; uwsgi --ini configs/uwsgi/daemon.ini'
+StandardOutput=append:/var/log/daemon1.log
+StandardError=append:/var/log/daemon2.log
+
+[Install]
+WantedBy=multi-user.target
