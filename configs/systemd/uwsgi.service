@@ -2,10 +2,12 @@
 Description=uWSGI daemon
 
 [Service]
-ExecStartPre=-/usr/bin/bash -c 'mkdir -p /run/uwsgi; chown user:nginx /run/uwsgi'
-ExecStart=/usr/bin/bash -c 'cd /app; uwsgi --ini configs/uwsgi/daemon.ini'
-StandardOutput=append:/var/log/daemon1.log
-StandardError=append:/var/log/daemon2.log
+ExecStartPre=-/usr/bin/bash -c 'mkdir -p /run/uwsgi; chown myappuser:nginx /run/uwsgi'
+ExecStart=/usr/bin/bash -c 'cd /var/www/daemon/code/; source /var/www/daemon/venv/bin/activate;  uwsgi --ini configs/uwsgi/daemon.ini'
+StandardOutput=/var/log/daemon.log
+StandardError=/var/log/daemon_error.log
+ExecStartPre=/bin/mkdir -p /run/uwsgi
+ExecStartPre=/bin/chown myappuser:myappuser /run/uwsgi
 
 [Install]
 WantedBy=multi-user.target
