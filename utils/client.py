@@ -51,9 +51,9 @@ class BaseAPI:
         return self.query_params.dict(exclude_none=True, by_alias=True)
 
     def __call__(self):
-        return self.request()
+        return self._request()
 
-    def request(self) -> Optional[BaseModel]:
+    def _request(self) -> Optional[BaseModel]:
 
         _request_kwargs = {
             'method': self.method,
