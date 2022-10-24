@@ -51,39 +51,38 @@ class BaseAPI:
         return self.query_params.dict(exclude_none=True, by_alias=True)
 
     def __call__(self):
-        return request(self)
+        return self.request()
 
+    def request(self) -> Optional[BaseModel]:
 
-def request(api: BaseAPI) -> Optional[BaseModel]:
+        _request_kwargs = {
+            'method': self.method,
+            'url': self.full_url,
+            'headers': self.headers,
+            'data': self.json,
+            'params': self.params,
+            'timeout': self.request_timeout,
+        }
+        logger.info('Request %s %s', self.method, self.full_url, extra=_request_kwargs)
+        with requests.Session() as s:
+            resp = s.request(**_request_kwargs)
 
-    _request_kwargs = {
-        'method': api.method,
-        'url': api.full_url,
-        'headers': api.headers,
-        'data': api.json,
-        'params': api.params,
-        'timeout': api.request_timeout,
-    }
-    logger.info('Request %s %s', api.method, api.full_url, extra=_request_kwargs)
-    with requests.Session() as s:
-        resp = s.request(**_request_kwargs)
+            logger.info('Finish request %s %s', self.method, self.full_url)
+            if resp.status_code < 200 or resp.status_code >= 300:
+                txt = resp.text
+                _request_kwargs.update({
+                    'status_code': resp.status_code,
+                    'resp_headers': dict(resp.headers),
+                    'content': txt
+                })
+                logger.error('Request fail %s %s', self.method, self.full_url, extra=_request_kwargs, stack_info=True)
+                raise Exception(f'Request fail {self.__class__}', txt)
 
-        logger.info('Finish request %s %s', api.method, api.full_url)
-        if resp.status_code < 200 or resp.status_code >= 300:
+            if not self.response:
+                return None
+
             txt = resp.text
-            _request_kwargs.update({
-                'status_code': resp.status_code,
-                'resp_headers': dict(resp.headers),
-                'content': txt
-            })
-            logger.error('Request fail %s %s', api.method, api.full_url, extra=_request_kwargs, stack_info=True)
-            raise Exception(f'Request fail {api.__class__}', txt)
+            logger.debug('Response %s', txt)
+            resp_obj = self.response.parse_raw(txt)
 
-        if not api.response:
-            return None
-
-        txt = resp.text
-        logger.debug('Response %s', txt)
-        resp_obj = api.response.parse_raw(txt)
-
-    return resp_obj
+        return resp_obj
